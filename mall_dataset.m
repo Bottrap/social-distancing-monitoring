@@ -57,12 +57,7 @@ if yolo == false
     [bbox, scores] = detect(peopleDetector, I);
 
     detectedImg = I;
-    if ~isempty(bbox)
-        for i = 1:size(bbox,1)
-            annotation = sprintf('%d', i);
-            detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(i,:), annotation, 'LineWidth', 3, 'color', 'green');
-        end
-    end
+    detectedImg = utils.getImgPeopleBox(bbox,bbox,detectedImg,'green');
     imshow(detectedImg)
 else
     % Prova Detector YOLOv4
@@ -137,13 +132,8 @@ pbaspect([1 2 1])
 set(gca, 'YDir', 'reverse')
 
 %% image with people detected with red bbox
-if ~isempty(idx)
-    for i = 1:size(idx,1)
-        hold on
-        annotation = sprintf('%d', idx(i));
-        detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(idx(i), :), annotation, 'LineWidth', 3, 'color', 'red'); 
-    end
-end
+detectedImg = utils.getImgPeopleBox(idx,bbox,detectedImg,'red');
+
 %%  image with people detected and rectangle
 sub2 = subplot(1,4,[1,2,3]);
 imshow(detectedImg)

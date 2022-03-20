@@ -60,12 +60,7 @@ peopleDetector = peopleDetectorACF();
 [bbox, scores] = detect(peopleDetector, I);
 
 detectedImg = I;
-if ~isempty(bbox)
-    for i = 1:size(bbox,1)
-        annotation = sprintf('%d', i);
-        detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(i,:), annotation, 'LineWidth', 3, 'color', 'green');
-    end
-end
+detectedImg = utils.getImgPeopleBox(bbox,bbox,detectedImg,'green');
 figure
 imshow(detectedImg)
 
@@ -118,7 +113,7 @@ for i = 1:size(Porig, 1)
     ROI = [ROI; new_row'];
 end
 ROI_limits = ROI
-ROI_limits = rotateMatrix(ROI_limits,-90);
+ROI_limits = utils.rotateMatrix(ROI_limits,-90);
 
 figure('position',[100 70 1200 600]) % default: 0.13 0.11 0.775 0.815
 % =============== BIRD'S EYE VIEW ===============
@@ -128,19 +123,13 @@ plot(ROI_limits(:,1), ROI_limits(:,2), '--b', 'LineWidth',1)
 hold on
 grid on
 % ruoto la matrice
-bottom_center_world = rotateMatrix(bottom_center_world,-90);
+bottom_center_world = utils.rotateMatrix(bottom_center_world,-90);
 % plot delle persone nella BEV
 plot(bottom_center_world(:,1), bottom_center_world(:,2), 'go','MarkerFaceColor','g', 'MarkerSize',9)
 plot(bottom_center_world(idx,1), bottom_center_world(idx,2), 'ro','MarkerFaceColor','r', 'MarkerSize',9)
 
 % image with people detected with red bbox
-if ~isempty(idx)
-    for i = 1:size(idx,1)
-        hold on
-        annotation = sprintf('%d', idx(i));
-        detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(idx(i), :), annotation, 'LineWidth', 3, 'color', 'red'); 
-    end
-end
+detectedImg = utils.getImgPeopleBox(idx,bbox,detectedImg,'red');
 
 % image with people detected and rectangle
 sub2 = subplot(1,4,[1,2,3]);
@@ -151,20 +140,3 @@ plot(Porig(:, 1), Porig(:, 2),'--b','LineWidth',1)
 h = gca;
 h.Visible = 'On';
 axis on;
-
-
-%% Utils
-
-function matrixRotated = rotateMatrix(matrix,angle)
-    % matrix: matrice 
-    if size(matrix,2) == 3
-        % rimuovo l'asse z
-        matrix(:,3) = [];
-    end
-    % angles in rad
-    angle = deg2rad(angle);
-    % definisco matrice di rotazione per visualizzare correttamente
-    rotation = [cos(angle) -sin(angle);sin(angle) cos(angle)];
-    % ruoto la matrice
-    matrixRotated = matrix*rotation;
-end

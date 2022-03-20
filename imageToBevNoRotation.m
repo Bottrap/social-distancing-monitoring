@@ -60,12 +60,7 @@ peopleDetector = peopleDetectorACF();
 [bbox, scores] = detect(peopleDetector, I);
 
 detectedImg = I;
-if ~isempty(bbox)
-    for i = 1:size(bbox,1)
-        annotation = sprintf('%d', i);
-        detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(i,:), annotation, 'LineWidth', 3, 'color', 'green');
-    end
-end
+detectedImg = utils.getImgPeopleBox(bbox,bbox,detectedImg,'green');
 figure
 imshow(detectedImg)
 
@@ -131,13 +126,7 @@ plot(bottom_center_world(:,1), bottom_center_world(:,2), 'go','MarkerFaceColor',
 plot(bottom_center_world(idx,1), bottom_center_world(idx,2), 'ro','MarkerFaceColor','r', 'MarkerSize',9)
 
 % image with people detected with red bbox
-if ~isempty(idx)
-    for i = 1:size(idx,1)
-        hold on
-        annotation = sprintf('%d', idx(i));
-        detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(idx(i), :), annotation, 'LineWidth', 3, 'color', 'red'); 
-    end
-end
+detectedImg = utils.getImgPeopleBox(idx,bbox,detectedImg,'red');
 
 % image with people detected and rectangle
 sub2 = subplot(1,4,[1,2,3]);
