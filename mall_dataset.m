@@ -117,7 +117,7 @@ d = triu(d);
 idx = [r;c]; 
 
 % =============== BIRD'S EYE VIEW ===============
-figure
+figure('position',[100 70 1200 600])
 sub1 = subplot(1,4,4);
 % Segnalo sulla Bird's Eye View tutte le persone indicandole come "Safe"
 % Safe -> Colore Blu
@@ -130,10 +130,8 @@ hold on
 pts_world = [pts_world;pts_world(1,:)]
 plot(pts_world(:,1), pts_world(:,2), '--b', 'LineWidth',1)
 %%
-axis equal
-% pbaspect([1 2 1])
 % Setto il rapporto tra assi x,y,z nel grafico
-pbaspect([2 1 1])
+pbaspect([1 2 1])
 % Effettuo il reverse dell'asse y per uniformarci col sistema di assi usato
 % nelle immagini (origine in alto a sinistra)
 set(gca, 'YDir', 'reverse')
@@ -155,3 +153,4 @@ plot(pts_image(:, 1), pts_image(:, 2),'--b','LineWidth',1)
 h = gca;
 h.Visible = 'On';
 axis on;
+
