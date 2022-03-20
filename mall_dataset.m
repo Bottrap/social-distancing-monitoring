@@ -97,10 +97,12 @@ bottom_center = [bbox(:,1)+bbox(:,3)/2, bbox(:, 2) + bbox(:,4)];
 t = insertMarker(detectedImg, bottom_center, 'o', 'size', 40, 'Color', 'r');
 figure, imshow(t)
 
+%% 
 [x_world, y_world] = transformPointsForward(T, bottom_center(:,1), bottom_center(:, 2));
 T1 = insertMarker(IBird2, [x_world, y_world], "circle", "Size", 20, 'color', 'r');
-imshow(T1)
+% imshow(T1)
 
+%% 
 % Calcolo la distanza di una persona dalle altre 
 % La matrice 'd' che si ottiene indica la distanza della i-esima 
 % dalla j-esima => d è per definizione una matrice simmetrica
@@ -114,16 +116,19 @@ d = triu(d);
 
 idx = [r;c]; 
 
+% =============== BIRD'S EYE VIEW ===============
+figure
+sub1 = subplot(1,4,4);
 % Segnalo sulla Bird's Eye View tutte le persone indicandole come "Safe"
 % Safe -> Colore Blu
-plot(x_world, y_world, 'bo', 'MarkerFaceColor',"b", 'MarkerSize', 15); hold on
+plot(x_world, y_world, 'go', 'MarkerFaceColor',"g", 'MarkerSize', 15); hold on
 % Sovrascrivo gli indicatori relativi alle persone che non rispettano la 
 % distanza sociale con il colore rosso
 plot(x_world(idx), y_world(idx), 'ro', 'MarkerFaceColor',"r", 'MarkerSize', 15); 
-%% TOGLIERE (ZONA VERDE DI ORIGINE DEI M/PX)
+%% ZONA DI INTERESSE
 hold on
-plot(pts_world(:,1), pts_world(:,2), 'o', 'MarkerSize', 10, 'color', 'blue', 'MarkerFaceColor', 'green');
-
+pts_world = [pts_world;pts_world(1,:)]
+plot(pts_world(:,1), pts_world(:,2), '--b', 'LineWidth',1)
 %%
 axis equal
 % pbaspect([1 2 1])
@@ -132,3 +137,21 @@ pbaspect([2 1 1])
 % Effettuo il reverse dell'asse y per uniformarci col sistema di assi usato
 % nelle immagini (origine in alto a sinistra)
 set(gca, 'YDir', 'reverse')
+
+%% image with people detected with red bbox
+if ~isempty(idx)
+    for i = 1:size(idx,1)
+        hold on
+        annotation = sprintf('%d', idx(i));
+        detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(idx(i), :), annotation, 'LineWidth', 3, 'color', 'red'); 
+    end
+end
+%%  image with people detected and rectangle
+sub2 = subplot(1,4,[1,2,3]);
+imshow(detectedImg)
+hold on
+pts_image = [pts_image;pts_image(1,:)]
+plot(pts_image(:, 1), pts_image(:, 2),'--b','LineWidth',1)
+h = gca;
+h.Visible = 'On';
+axis on;
