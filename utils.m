@@ -16,11 +16,21 @@ classdef utils
         end
         
         %% get image with red bbox on people detected 
-        function detectedImg = getImgPeopleRedBox(idx,bbox,detectedImg)
-            if ~isempty(idx)
-                for i = 1:size(idx,1)
-                    annotation = sprintf('%d', idx(i));
-                    detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(idx(i), :), annotation, 'LineWidth', 3, 'color', 'red'); 
+        function detectedImg = getImgPeopleBox(idx,bbox,detectedImg,color)
+            if strcmp(color,'green')
+                % idx = bbox
+                if ~isempty(bbox)
+                    for i = 1:size(bbox,1)
+                        annotation = sprintf('%d', i);
+                        detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(i,:), annotation, 'LineWidth', 3, 'color', 'green');
+                    end
+                end
+            elseif strcmp(color,'red')
+                if ~isempty(idx)
+                    for i = 1:size(idx,1)
+                        annotation = sprintf('%d', idx(i));
+                        detectedImg = insertObjectAnnotation(detectedImg, 'rectangle', bbox(idx(i), :), annotation, 'LineWidth', 3, 'color', color); 
+                    end
                 end
             end
         end
