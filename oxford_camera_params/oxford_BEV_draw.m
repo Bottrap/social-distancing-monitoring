@@ -1,6 +1,7 @@
 clear;
 clc;
 close all;
+addpath("../");
 
 % Recupero l'immagine
 % I = imread("../dataset/towncentre.jpg");
