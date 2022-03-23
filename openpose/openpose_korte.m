@@ -1,6 +1,8 @@
 sensor_height = 24; %mm
 sensor_width = 36; %mm
 
+addpath("../");
+
 imgPath = '../dataset/KORTE/data/_MG_8704.JPG';
 I = imread(imgPath); 
 cameraInfo = imfinfo(imgPath);
@@ -11,9 +13,9 @@ realUpperBodyLength = 444.5; %mm
 addpath("utils")
 
 dataDir = fullfile(tempdir,'OpenPose');
-% trainedOpenPoseNet_url = 'https://ssd.mathworks.com/supportfiles/vision/data/human-pose-estimation.zip';
-% downloadTrainedOpenPoseNet(trainedOpenPoseNet_url,dataDir)
-% unzip(fullfile(dataDir,'human-pose-estimation.zip'),dataDir);
+trainedOpenPoseNet_url = 'https://ssd.mathworks.com/supportfiles/vision/data/human-pose-estimation.zip';
+downloadTrainedOpenPoseNet(trainedOpenPoseNet_url,dataDir)
+unzip(fullfile(dataDir,'human-pose-estimation.zip'),dataDir);
 modelfile = fullfile(dataDir,'human-pose-estimation.onnx');
 
 layers = importONNXLayers(modelfile,"ImportWeights",true);
@@ -136,5 +138,15 @@ end
 function y_sensor_mm = y_pixelToSensor(y_pixel, sensorHeight, imageHeight)
     y_sensor_mm = (y_pixel * sensorHeight) / imageHeight;
 end
+
+% convert coordinate scales
+function [new_X,new_Y] = convert_coords(X,Y,inputHeight,inputWidth,outputHeight,outputWidth)
+        Xratio = double(inputHeight) / double(outputHeight);
+        Yratio = double(inputWidth) / double(outputWidth);
+        new_X = X * Xratio;
+        new_Y = Y* Yratio;
+end
+
+
 
 
