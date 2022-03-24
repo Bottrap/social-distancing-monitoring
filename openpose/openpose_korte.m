@@ -3,13 +3,14 @@ sensor_width = 36; %mm
 
 addpath("../");
 
-imgPath = '../dataset/KORTE/data/_MG_8704.JPG';
+% Definisco il percorso dell'immagine che voglio importare
+imgPath = '../dataset/KORTE/data/_MG_8781.JPG';
 I = imread(imgPath); 
 cameraInfo = imfinfo(imgPath);
 focal_length = cameraInfo.DigitalCamera.FocalLength;
 realUpperBodyLength = 444.5; %mm
 
-%% PROVIAMO A IMPORTARE OPENPOSE
+%% Importo Openpose
 addpath("utils")
 
 dataDir = fullfile(tempdir,'OpenPose');
@@ -22,6 +23,9 @@ layers = importONNXLayers(modelfile,"ImportWeights",true);
 layers = removeLayers(layers,["Output_node_95" "Output_node_98" "Output_node_147" "Output_node_150"]);
 net = dlnetwork(layers);
 
+
+%% OpenPose detection (https://it.mathworks.com/help/deeplearning/ug/estimate-body-pose-using-deep-learning.html)
+% oppure usare il comando --> openExample('deeplearning_shared/EstimateBodyPoseUsingDeepLearningExample')
 
 % The network expects image data of data type single in the range [-0.5, 0.5]. Shift and rescale the data to this range.
 netInput = im2single(I)-0.5;
@@ -44,28 +48,26 @@ params = getBodyPoseParameters;
 poses = getBodyPoses(heatmaps,pafs,params);
 
 % Per mostrare le pose
-% renderBodyPoses(I,poses,size(heatmaps,1),size(heatmaps,2),params);
+renderBodyPoses(I,poses,size(heatmaps,1),size(heatmaps,2),params);
 
-%% Mostriamo i numeri delle persone
-% imshow(I)
-% hold on
-% plot(poses(1,2,1), poses(1,2,2), 'go','MarkerFaceColor','g', 'MarkerSize',9)
+%% Istanzio il peopleDetector
+peopleDetector = peopleDetectorACF();
+[bbox, scores] = detect(peopleDetector, I);
 
+social_distance = 2;
 
-%% 
+%%
 % A noi interessano neck-lefthip (7° elemento del vettore)
 % e neck-righthip (10° elemento del vettore)
 
-% Grandezza dell'immagine
-% image_width = size(I,2);
-% image_height = size(I,1);
+% Considero come grandezza dell'immagine quella scalata e utilizzata da
+% openpose
 image_width = 300;
 image_height = 200;
 
 bodyLocations = [];
 
-% Considerando che l'openpose e il detector individuino le persone nello
-% stesso ordine
+%Ottengo le coordinate di collo e anche delle persone rilevate da Openpose
 for i = 1:size(poses,1)
     x_neck = poses(i, BodyParts.Neck, 1);    
     x_lefthip = poses(i, BodyParts.LeftHip, 1);
@@ -125,8 +127,105 @@ for i = 1:size(poses,1)
     
 end
 
-d = pdist2([bodyLocations(:,1), bodyLocations(:,2), bodyLocations(:,3)], [bodyLocations(:,1), bodyLocations(:,2), bodyLocations(:,3)]);
-d = triu(d);
+% Calcolo la distanza di una persona dalle altre 
+% La matrice 'd' che si ottiene indica la distanza della i-esima 
+% dalla j-esima => d è per definizione una matrice simmetrica
+distances = pdist2([bodyLocations(:,1), bodyLocations(:,2), bodyLocations(:,3)], [bodyLocations(:,1), bodyLocations(:,2), bodyLocations(:,3)]);
+
+% Rendo la matrice ottenuta una matrice triangolare superiore 
+% (le informazioni della parte triangolare inferiore sono ridondanti)
+distances = triu(distances);
+
+%% Visualizzazione box
+% Prendo le coordinate relative ai punti di una sola anca per ogni persona
+% Nel caso in cui sia LeftHip che RightHip siano NaN, pongo la riga pari a
+% 0 e poi andrò ad eliminare la persona da poses
+hips_points = [];
+for i = 1:size(bbox, 1)
+    if ~isnan(poses((i), BodyParts.LeftHip, 1)) && ~isnan(poses((i), BodyParts.LeftHip, 2))
+        x_hip = poses(i, BodyParts.LeftHip, 1);
+        y_hip = poses(i, BodyParts.LeftHip, 2);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, 1600, 2400, 200, 300);
+        hips_points = [hips_points; new_x_hip new_y_hip];
+    elseif ~isnan(poses((i), BodyParts.RightHip, 1)) && ~isnan(poses((i), BodyParts.RightHip, 2))
+         x_hip = poses(i, BodyParts.RightHip, 1);
+         y_hip = poses(i, BodyParts.RightHip, 2);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, 1600, 2400, 200, 300);
+        hips_points = [hips_points; new_x_hip new_y_hip];
+    else 
+        hips_points = [hips_points; 0 0];
+    end
+end
+% Tramite il people detector e openpose elimino i falsi positivi reciproci
+bbox_keep = [];
+poses_keep = [];
+for i = 1:size(bbox,1)
+    bbox_points = bbox2points(bbox(i,:));
+    x_box = bbox_points(:, 1);
+    y_box = bbox_points(:, 2);
+    indexes = inpolygon(hips_points(:,1), hips_points(:,2), x_box, y_box);
+    if any(indexes, 'all') == 1
+        % Mi salvo gli indici dei bbox e dei punti di poses che sono corretti
+        bbox_keep = [bbox_keep; i];
+        poses_keep = [poses_keep; find(indexes == 1)];
+    end  
+end
+
+%% Rimuovo i punti e i bbox che mi danno un falso positivo
+bbox = bbox(bbox_keep, :);
+poses = poses(poses_keep, :, :);
+
+%% Tengo le colonne dei poses keep
+distances = distances(poses_keep, poses_keep);
+%%
+
+% Unione openpose con people detector (red boxes)
+% Esprimo la matrice delle distanze in metri
+d_m = distances/1000; %Da mm a m
+[r, c] = find(d_m < social_distance & d_m > 0);
+idx = [r;c];
+idx = unique(idx);
+
+% Ottengo le coordinate delle anche delle persone che violano la distanza
+% sociale e le trasformo in relazione alla dimensione effettiva
+% dell'immagine e non rispetto a 200x300 (dim. scalata per la openpose)
+viol_hip = [];
+for i = 1:size(idx)
+    if ~isnan(poses(idx(i), BodyParts.LeftHip, 1)) && ~isnan(poses(idx(i), BodyParts.LeftHip, 2))
+        x_hip = poses(idx(i), BodyParts.LeftHip, 1);
+        y_hip = poses(idx(i), BodyParts.LeftHip, 2);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, 1600, 2400, 200, 300);
+        viol_hip = [viol_hip; new_x_hip, new_y_hip];
+    end
+    if ~isnan(poses(idx(i), BodyParts.RightHip, 1)) && ~isnan(poses(idx(i), BodyParts.RightHip, 2))
+        x_hip = poses(idx(i), BodyParts.RightHip, 1);
+        y_hip = poses(idx(i), BodyParts.RightHip, 2);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, 1600, 2400, 200, 300);
+        viol_hip = [viol_hip; new_x_hip, new_y_hip];
+    end
+end
+
+% Mostro l'immagine dopo aver rimosso i falsi positivi
+detectedImg = I;
+detectedImg = utils.getImgPeopleBox(bbox,bbox,detectedImg,'green');
+figure
+imshow(detectedImg)
+
+% Faccio mostrare in rosso il bbox relativo alle persone che violano la
+% distanza sociale
+for i = 1:size(bbox,1)
+    bbox_points = bbox2points(bbox(i,:));
+    x_box = bbox_points(:, 1);
+    y_box = bbox_points(:, 2);
+    indexes = inpolygon(viol_hip(:,1), viol_hip(:,2), x_box, y_box);
+    % Controllo che indexes abbia almeno un elemento pari a 1
+    if any(indexes, 'all') == 1
+        detectedImg = utils.getImgPeopleBox(i, bbox, detectedImg, 'red');
+    end
+end
+
+imshow(detectedImg);
+
 
 %% Utilities 
 
@@ -139,13 +238,15 @@ function y_sensor_mm = y_pixelToSensor(y_pixel, sensorHeight, imageHeight)
     y_sensor_mm = (y_pixel * sensorHeight) / imageHeight;
 end
 
-% convert coordinate scales
-function [new_X,new_Y] = convert_coords(X,Y,inputHeight,inputWidth,outputHeight,outputWidth)
-        Xratio = double(inputHeight) / double(outputHeight);
-        Yratio = double(inputWidth) / double(outputWidth);
-        new_X = X * Xratio;
-        new_Y = Y* Yratio;
+% Converto un punto dalla dimensione 200x300 (poses) alla dimensione
+% effettiva dell'immagine
+function [new_X,new_Y] = convert_coords(X,Y,outHeight,outWidth,inHeight,inWidth)
+Xratio = double(outHeight) / double(inHeight);
+Yratio = double(outWidth) / double(inWidth);
+new_X = X * Xratio;
+new_Y = Y* Yratio;
 end
+
 
 
 
