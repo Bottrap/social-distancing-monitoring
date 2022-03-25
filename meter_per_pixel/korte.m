@@ -51,7 +51,6 @@ if yolo == false
     peopleDetector = peopleDetectorACF();
     [bbox, scores] = detect(peopleDetector, I);
     
-    detectedImg = I;
     detectedImg = utils.getImgPeopleBox(I,bbox);
     imshow(detectedImg)
 else

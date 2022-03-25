@@ -206,8 +206,7 @@ for i = 1:size(idx)
 end
 
 % Mostro l'immagine dopo aver rimosso i falsi positivi
-detectedImg = I;
-detectedImg = utils.getImgPeopleBox(bbox,bbox,detectedImg,'green');
+detectedImg = utils.getImgPeopleBox(I,bbox);
 figure
 imshow(detectedImg)
 
@@ -220,7 +219,7 @@ for i = 1:size(bbox,1)
     indexes = inpolygon(viol_hip(:,1), viol_hip(:,2), x_box, y_box);
     % Controllo che indexes abbia almeno un elemento pari a 1
     if any(indexes, 'all') == 1
-        detectedImg = utils.getImgPeopleBox(i, bbox, detectedImg, 'red');
+        detectedImg = utils.getImgPeopleBox(detectedImg,bbox,idx);
     end
 end
 
