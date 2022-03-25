@@ -38,13 +38,8 @@ T = fitgeotrans(pts_image, pts_world,'projective');
 point_selected = reshape(pts_world', 1, []);
 % Coloro il quadrilatero selezionato di giallo (dopo aver applicato la
 % trasformazione
-Ori = insertShape(I, 'FilledPolygon', point_selected, 'LineWidth', 5, ...
-    'Opacity', 0.5);
+Ori = insertShape(I, 'FilledPolygon', point_selected, 'LineWidth', 5, 'Opacity', 0.5);
 imshow(Ori)
-
-[x_world, y_world] = transformPointsForward(T, pts_world(:,1), pts_world(:, 2));
-IBird2 = insertShape(IBird, 'FilledPolygon', reshape([x_world, y_world]', 1, []), "Opacity",0.5);
-imshow(IBird2)
 
 %% Scelta del detector
 % true = YOLOv4-coco
@@ -57,7 +52,7 @@ if yolo == false
     [bbox, scores] = detect(peopleDetector, I);
     
     detectedImg = I;
-    detectedImg = utils.getImgPeopleBox(bbox,bbox,detectedImg,'green');
+    detectedImg = utils.getImgPeopleBox(I,bbox);
     imshow(detectedImg)
 else
     % Detector YOLOv4
@@ -114,11 +109,11 @@ distances = triu(distances);
 % Trovo gli indici delle persone che non rispettano la distanza sociale
 % posta a 2 metri
 [r, c] = find(distances<2 & distances>0);
-
 idx = [r;c];
 
 % =============== BIRD'S EYE VIEW ===============
 figure('position',[100 70 1200 600])
+% subplot figura a destra (bird's eye view)
 sub1 = subplot(1,4,4);
 % Segnalo sulla Bird's Eye View tutte le persone indicandole come "Safe"
 % Safe -> Colore Verde
@@ -139,12 +134,15 @@ set(gca, 'YDir', 'reverse')
 
 % Mostro l'immagine con le persone che non rispettano la distanza sociale
 % indicandole con il colore rosso
-detectedImg = utils.getImgPeopleBox(idx,bbox,detectedImg,'red');
+detectedImg = utils.getImgPeopleBox(detectedImg,bbox,idx);
+% subplot figura a sinistra
 sub2 = subplot(1,4,[1,2,3]);
 imshow(detectedImg)
 hold on
 pts_image = [pts_image;pts_image(1,:)];
+% plot del corrispondete rettangolo della zona di interesse nell'immagine di partenza
 plot(pts_image(:, 1), pts_image(:, 2),'--b','LineWidth',1)
+% visualizzo gli assi nell'immagine di partenza
 h = gca;
 h.Visible = 'On';
 axis on;
