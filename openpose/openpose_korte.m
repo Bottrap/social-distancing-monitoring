@@ -1,7 +1,10 @@
+clear
+clc
+close all
+addpath("../");
+
 sensor_height = 24; %mm
 sensor_width = 36; %mm
-
-addpath("../");
 
 % Definisco il percorso dell'immagine che voglio importare
 imgPath = '../dataset/KORTE/data/_MG_8781.JPG';
@@ -43,7 +46,7 @@ heatmaps = heatmaps(:,:,1:end-1);
 pafs = predict(net,netInput,"Outputs","node_150");
 % Get the numeric PAF data stored in the dlarray. The data has 38 channels. There are two channels for each type of body part pairing, which represent the x- and y-component of the vector field.
 pafs = extractdata(pafs);
-%%
+%% ==================================
 params = getBodyPoseParameters;
 poses = getBodyPoses(heatmaps,pafs,params);
 
@@ -53,9 +56,58 @@ renderBodyPoses(I,poses,size(heatmaps,1),size(heatmaps,2),params);
 %% Istanzio il peopleDetector
 peopleDetector = peopleDetectorACF();
 [bbox, scores] = detect(peopleDetector, I);
+figure
+imshow(utils.getImgPeopleBox(I,bbox));
 
+% imposto la distanza sociale
 social_distance = 2;
 
+%% Visualizzazione box
+% Prendo le coordinate relative ai punti di una sola anca per ogni persona
+% Nel caso in cui sia LeftHip che RightHip siano NaN, pongo la riga pari a
+% 0 e poi andrò ad eliminare la persona da poses
+hips_points = [];
+for i = 1:size(poses, 1)
+    if ~isnan(poses((i), BodyParts.LeftHip, 1)) && ~isnan(poses((i), BodyParts.LeftHip, 2))
+        x_hip = poses(i, BodyParts.LeftHip, 1);
+        y_hip = poses(i, BodyParts.LeftHip, 2);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), 200, 300);
+        hips_points = [hips_points; new_x_hip new_y_hip];
+    elseif ~isnan(poses((i), BodyParts.RightHip, 1)) && ~isnan(poses((i), BodyParts.RightHip, 2))
+         x_hip = poses(i, BodyParts.RightHip, 1);
+         y_hip = poses(i, BodyParts.RightHip, 2);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), 200, 300);
+        hips_points = [hips_points; new_x_hip new_y_hip];
+    else 
+        hips_points = [hips_points; 0 0];
+    end
+end
+% Tramite il people detector e openpose elimino i falsi positivi reciproci
+bbox_keep = [];
+poses_keep = [];
+for i = 1:size(bbox,1)
+    bbox_points = bbox2points(bbox(i,:));
+    x_box = bbox_points(:, 1);
+    y_box = bbox_points(:, 2);
+    indexes = inpolygon(hips_points(:,1), hips_points(:,2), x_box, y_box);
+    % se c'è almeno un valore pari ad 1 nel vettore
+    if any(indexes, 'all') == 1
+        % Mi salvo gli indici dei bbox e dei punti di poses che sono corretti
+        bbox_keep = [bbox_keep; i];
+        poses_keep = [poses_keep; find(indexes == 1)];
+    end  
+end
+
+% %% Rimuovo i punti e i bbox che mi danno un falso positivo
+% bbox = bbox(bbox_keep, :);
+% poses = poses(poses_keep, :, :);
+%%
+bbox = bbox(bbox_keep, :);
+poses_new = [];
+for i=1:size(poses_keep)
+    poses_new = [poses_new; poses(poses_keep(i), :, :)];
+end
+poses = poses_new;
 %%
 % A noi interessano neck-lefthip (7° elemento del vettore)
 % e neck-righthip (10° elemento del vettore)
@@ -136,47 +188,6 @@ distances = pdist2([bodyLocations(:,1), bodyLocations(:,2), bodyLocations(:,3)],
 % (le informazioni della parte triangolare inferiore sono ridondanti)
 distances = triu(distances);
 
-%% Visualizzazione box
-% Prendo le coordinate relative ai punti di una sola anca per ogni persona
-% Nel caso in cui sia LeftHip che RightHip siano NaN, pongo la riga pari a
-% 0 e poi andrò ad eliminare la persona da poses
-hips_points = [];
-for i = 1:size(bbox, 1)
-    if ~isnan(poses((i), BodyParts.LeftHip, 1)) && ~isnan(poses((i), BodyParts.LeftHip, 2))
-        x_hip = poses(i, BodyParts.LeftHip, 1);
-        y_hip = poses(i, BodyParts.LeftHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, 1600, 2400, 200, 300);
-        hips_points = [hips_points; new_x_hip new_y_hip];
-    elseif ~isnan(poses((i), BodyParts.RightHip, 1)) && ~isnan(poses((i), BodyParts.RightHip, 2))
-         x_hip = poses(i, BodyParts.RightHip, 1);
-         y_hip = poses(i, BodyParts.RightHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, 1600, 2400, 200, 300);
-        hips_points = [hips_points; new_x_hip new_y_hip];
-    else 
-        hips_points = [hips_points; 0 0];
-    end
-end
-% Tramite il people detector e openpose elimino i falsi positivi reciproci
-bbox_keep = [];
-poses_keep = [];
-for i = 1:size(bbox,1)
-    bbox_points = bbox2points(bbox(i,:));
-    x_box = bbox_points(:, 1);
-    y_box = bbox_points(:, 2);
-    indexes = inpolygon(hips_points(:,1), hips_points(:,2), x_box, y_box);
-    if any(indexes, 'all') == 1
-        % Mi salvo gli indici dei bbox e dei punti di poses che sono corretti
-        bbox_keep = [bbox_keep; i];
-        poses_keep = [poses_keep; find(indexes == 1)];
-    end  
-end
-
-%% Rimuovo i punti e i bbox che mi danno un falso positivo
-bbox = bbox(bbox_keep, :);
-poses = poses(poses_keep, :, :);
-
-%% Tengo le colonne dei poses keep
-distances = distances(poses_keep, poses_keep);
 %%
 
 % Unione openpose con people detector (red boxes)
@@ -194,13 +205,13 @@ for i = 1:size(idx)
     if ~isnan(poses(idx(i), BodyParts.LeftHip, 1)) && ~isnan(poses(idx(i), BodyParts.LeftHip, 2))
         x_hip = poses(idx(i), BodyParts.LeftHip, 1);
         y_hip = poses(idx(i), BodyParts.LeftHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, 1600, 2400, 200, 300);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), 200, 300);
         viol_hip = [viol_hip; new_x_hip, new_y_hip];
     end
     if ~isnan(poses(idx(i), BodyParts.RightHip, 1)) && ~isnan(poses(idx(i), BodyParts.RightHip, 2))
         x_hip = poses(idx(i), BodyParts.RightHip, 1);
         y_hip = poses(idx(i), BodyParts.RightHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, 1600, 2400, 200, 300);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), 200, 300);
         viol_hip = [viol_hip; new_x_hip, new_y_hip];
     end
 end

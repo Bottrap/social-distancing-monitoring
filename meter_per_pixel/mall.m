@@ -2,6 +2,7 @@ clear;
 clc;
 close all;
 addpath("../");
+addpath("../yolov4");
 
 % immagine da frame video
 videoReader = VideoReader("../dataset/mall.mp4");
