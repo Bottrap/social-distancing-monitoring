@@ -4,7 +4,7 @@ close all;
 addpath("../");
 
 % immagine da frame video
-videoReader = VideoReader("TownCentreXVID.avi");
+videoReader = VideoReader("../dataset/TownCentreXVID.avi");
 frameNumber = 0;
 while frameNumber < 30
     frame = readFrame(videoReader);
@@ -138,7 +138,8 @@ plot(bottom_center_world(idx,1), bottom_center_world(idx,2), 'ro','MarkerFaceCol
 % =============== IMAGE WITH PEOPLE DETECTED ===============
 % Visualizzo un bounding box rosso intorno ad ogni persona che viola la distanza sociale
 detectedImg = utils.getImgPeopleBox(detectedImg,bbox,idx);
-% subplot figura a sinistra (image with people detected and rectangle)sub2 = subplot(1,4,[1,2,3]);
+% subplot figura a sinistra (image with people detected and rectangle)
+sub2 = subplot(1,4,[1,2,3]);
 sub2.Position = sub2.Position + [-0.03 0 0 0];
 imshow(detectedImg)
 hold on
