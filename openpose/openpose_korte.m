@@ -7,7 +7,7 @@ sensor_height = 24; %mm
 sensor_width = 36; %mm
 
 % Definisco il percorso dell'immagine che voglio importare
-imgPath = '../dataset/KORTE/data/_MG_8781.JPG';
+imgPath = '../dataset/KORTE/data/IMG_7553.JPG';
 I = imread(imgPath); 
 cameraInfo = imfinfo(imgPath);
 focal_length = cameraInfo.DigitalCamera.FocalLength;
@@ -94,7 +94,8 @@ for i = 1:size(bbox,1)
     if any(indexes, 'all') == 1
         % Mi salvo gli indici dei bbox e dei punti di poses che sono corretti
         bbox_keep = [bbox_keep; i];
-        poses_keep = [poses_keep; find(indexes == 1)];
+        pose2keep = find(indexes == 1);
+        poses_keep = [poses_keep; pose2keep(1)];
     end  
 end
 
