@@ -125,17 +125,17 @@ for i = 1:size(poses,1)
     x_lefthip = poses(i, BodyParts.LeftHip, 1);
     x_righthip = poses(i, BodyParts.RightHip, 1);
     
-    x_neck_mm = x_pixelToSensor(x_neck, sensor_width, image_width);
-    x_lefthip_mm = x_pixelToSensor(x_lefthip, sensor_width, image_width);
-    x_righthip_mm = x_pixelToSensor(x_righthip, sensor_width, image_width);
+    x_neck_mm = x_pixelToMillimiters(x_neck, sensor_width, image_width);
+    x_lefthip_mm = x_pixelToMillimiters(x_lefthip, sensor_width, image_width);
+    x_righthip_mm = x_pixelToMillimiters(x_righthip, sensor_width, image_width);
     
     y_neck = poses(i, BodyParts.Neck, 2);    
     y_lefthip = poses(i, BodyParts.LeftHip, 2);
     y_righthip = poses(i, BodyParts.RightHip, 2);
     
-    y_neck_mm = y_pixelToSensor(y_neck, sensor_height, image_height);
-    y_lefthip_mm = y_pixelToSensor(y_lefthip, sensor_height, image_height);
-    y_righthip_mm = y_pixelToSensor(y_righthip, sensor_height, image_height);
+    y_neck_mm = y_pixelToMillimiters(y_neck, sensor_height, image_height);
+    y_lefthip_mm = y_pixelToMillimiters(y_lefthip, sensor_height, image_height);
+    y_righthip_mm = y_pixelToMillimiters(y_righthip, sensor_height, image_height);
     
     
     dist_neck_lefthip = sqrt((x_neck_mm - x_lefthip_mm)^2 + (y_neck_mm - y_lefthip_mm)^2);
@@ -239,12 +239,15 @@ imshow(detectedImg);
 
 %% Utilities 
 
-function x_sensor_mm = x_pixelToSensor(x_pixel, sensorWidth, imageWidth)
+% Tramite la dimensione dell'immagine e la grandezza del sensore in
+% millimetri siamo in grado di trasformare le coordinate da pixel a mm
+
+function x_sensor_mm = x_pixelToMillimiters(x_pixel, sensorWidth, imageWidth)
     x_sensor_mm = (x_pixel * sensorWidth) / imageWidth;
 end
 
 
-function y_sensor_mm = y_pixelToSensor(y_pixel, sensorHeight, imageHeight)
+function y_sensor_mm = y_pixelToMillimiters(y_pixel, sensorHeight, imageHeight)
     y_sensor_mm = (y_pixel * sensorHeight) / imageHeight;
 end
 
