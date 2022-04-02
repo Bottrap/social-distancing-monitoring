@@ -157,15 +157,17 @@ for i = 1:size(poses,1)
         y_hip_mm = y_righthip_mm;
     end
     
+    % Stimo quale sia la coordinata del punto centrale del busto sul piano
+    % del sensore, espresso in millimetri
     bodySensorXmm = (x_neck_mm + x_hip_mm)/2;
     bodySensorYmm = (y_neck_mm + y_hip_mm)/2;
     
     bodySensorXmm = -(bodySensorXmm - (sensor_width / 2));
     bodySensorYmm = bodySensorYmm - (sensor_height / 2);
-    bodySensorZmm = focal_length;
     
     camera_body_ZDistance = 0;
     if dim_torso ~= 0
+        % d = (f * Dw)/Di
         camera_body_ZDistance = (focal_length * realUpperBodyLength)/ dim_torso;
     end
     
