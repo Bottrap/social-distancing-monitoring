@@ -7,7 +7,7 @@ sensor_height = 24; %mm
 sensor_width = 36; %mm
 
 % Definisco il percorso dell'immagine che voglio importare
-imgPath = '../dataset/KORTE/data/IMG_5696.JPG';
+imgPath = '../dataset/KORTE/data/IMG_5737.JPG';
 I = imread(imgPath); 
 cameraInfo = imfinfo(imgPath);
 focal_length = cameraInfo.DigitalCamera.FocalLength;
@@ -147,7 +147,7 @@ for i = 1:size(poses,1)
     % direttamente quella di distanza maggiore considerandola come la
     % lunghezza del torso (senza andare a trovare il punto medio tra le
     % anche)
-    if dist_neck_lefthip > dist_neck_righthip | isnan(dist_neck_righthip)
+    if dist_neck_lefthip > dist_neck_righthip || isnan(dist_neck_righthip)
         dim_torso = dist_neck_lefthip;
         x_hip_mm = x_lefthip_mm;
         y_hip_mm = y_lefthip_mm;
@@ -206,13 +206,13 @@ for i = 1:size(idx)
     if ~isnan(poses(idx(i), BodyParts.LeftHip, 1)) && ~isnan(poses(idx(i), BodyParts.LeftHip, 2))
         x_hip = poses(idx(i), BodyParts.LeftHip, 1);
         y_hip = poses(idx(i), BodyParts.LeftHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), size(heatmaps, 1), size(heatmaps, 2));
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,2), size(I,1), size(heatmaps, 2), size(heatmaps, 1));
         viol_hip = [viol_hip; new_x_hip, new_y_hip];
     end
     if ~isnan(poses(idx(i), BodyParts.RightHip, 1)) && ~isnan(poses(idx(i), BodyParts.RightHip, 2))
         x_hip = poses(idx(i), BodyParts.RightHip, 1);
         y_hip = poses(idx(i), BodyParts.RightHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), size(heatmaps, 1), size(heatmaps, 2));
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,2), size(I,1), size(heatmaps, 2), size(heatmaps, 1));
         viol_hip = [viol_hip; new_x_hip, new_y_hip];
     end
 end
@@ -223,18 +223,19 @@ figure
 imshow(detectedImg)
 
 % Faccio mostrare in rosso il bbox relativo alle persone che violano la
-% distanza sociale
-for i = 1:size(bbox,1)
-    bbox_points = bbox2points(bbox(i,:));
-    x_box = bbox_points(:, 1);
-    y_box = bbox_points(:, 2);
-    indexes = inpolygon(viol_hip(:,1), viol_hip(:,2), x_box, y_box);
-    % Controllo che indexes abbia almeno un elemento pari a 1
-    if any(indexes, 'all') == 1
-        detectedImg = utils.getImgPeopleBox(detectedImg,bbox,idx);
+% distanza sociale se idx non è vuoto
+if ~isempty(idx)
+    for i = 1:size(bbox,1)
+        bbox_points = bbox2points(bbox(i,:));
+        x_box = bbox_points(:, 1);
+        y_box = bbox_points(:, 2);
+        indexes = inpolygon(viol_hip(:,1), viol_hip(:,2), x_box, y_box);
+        % Controllo che indexes abbia almeno un elemento pari a 1
+        if any(indexes, 'all') == 1
+            detectedImg = utils.getImgPeopleBox(detectedImg,bbox,idx);
+        end
     end
 end
-
 imshow(detectedImg);
 
 
