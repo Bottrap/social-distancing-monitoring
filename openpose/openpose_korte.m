@@ -7,7 +7,7 @@ sensor_height = 24; %mm
 sensor_width = 36; %mm
 
 % Definisco il percorso dell'immagine che voglio importare
-imgPath = '../dataset/KORTE/data/IMG_5766.JPG';
+imgPath = '../dataset/KORTE/data/IMG_5696.JPG';
 I = imread(imgPath); 
 cameraInfo = imfinfo(imgPath);
 focal_length = cameraInfo.DigitalCamera.FocalLength;
@@ -147,7 +147,7 @@ for i = 1:size(poses,1)
     % direttamente quella di distanza maggiore considerandola come la
     % lunghezza del torso (senza andare a trovare il punto medio tra le
     % anche)
-    if dist_neck_lefthip > dist_neck_righthip
+    if dist_neck_lefthip > dist_neck_righthip | isnan(dist_neck_righthip)
         dim_torso = dist_neck_lefthip;
         x_hip_mm = x_lefthip_mm;
         y_hip_mm = y_lefthip_mm;
