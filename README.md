@@ -90,3 +90,5 @@ imgPath = '../dataset/KORTE/data/_MG_8781.JPG';
 sensor_height = 24; %mm
 sensor_width = 36; %mm
 ```
+Note that the OpenPose library represents the bottleneck of this system as it is not always very accurate in the detections.
+![bad OpenPose detection example]()
