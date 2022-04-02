@@ -7,7 +7,7 @@ sensor_height = 24; %mm
 sensor_width = 36; %mm
 
 % Definisco il percorso dell'immagine che voglio importare
-imgPath = '../dataset/KORTE/data/IMG_7553.JPG';
+imgPath = '../dataset/KORTE/data/IMG_5766.JPG';
 I = imread(imgPath); 
 cameraInfo = imfinfo(imgPath);
 focal_length = cameraInfo.DigitalCamera.FocalLength;
@@ -71,18 +71,18 @@ for i = 1:size(poses, 1)
     if ~isnan(poses((i), BodyParts.LeftHip, 1)) && ~isnan(poses((i), BodyParts.LeftHip, 2))
         x_hip = poses(i, BodyParts.LeftHip, 1);
         y_hip = poses(i, BodyParts.LeftHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), 200, 300);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,2), size(I,1), size(heatmaps, 2), size(heatmaps, 1));
         hips_points = [hips_points; new_x_hip new_y_hip];
     elseif ~isnan(poses((i), BodyParts.RightHip, 1)) && ~isnan(poses((i), BodyParts.RightHip, 2))
          x_hip = poses(i, BodyParts.RightHip, 1);
          y_hip = poses(i, BodyParts.RightHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), 200, 300);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,2), size(I,1), size(heatmaps, 2), size(heatmaps, 1));
         hips_points = [hips_points; new_x_hip new_y_hip];
     else 
         hips_points = [hips_points; 0 0];
     end
 end
-% Tramite il people detector e openpose elimino i falsi positivi reciproci
+%% Tramite il people detector e openpose elimino i falsi positivi reciproci
 bbox_keep = [];
 poses_keep = [];
 for i = 1:size(bbox,1)
@@ -115,8 +115,8 @@ poses = poses_new;
 
 % Considero come grandezza dell'immagine quella scalata e utilizzata da
 % openpose
-image_width = 300;
-image_height = 200;
+image_width = size(heatmaps, 2);
+image_height = size(heatmaps, 1);
 
 bodyLocations = [];
 
@@ -200,19 +200,19 @@ idx = unique(idx);
 
 % Ottengo le coordinate delle anche delle persone che violano la distanza
 % sociale e le trasformo in relazione alla dimensione effettiva
-% dell'immagine e non rispetto a 200x300 (dim. scalata per la openpose)
+% dell'immagine e non rispetto alla dim. scalata per la openpose
 viol_hip = [];
 for i = 1:size(idx)
     if ~isnan(poses(idx(i), BodyParts.LeftHip, 1)) && ~isnan(poses(idx(i), BodyParts.LeftHip, 2))
         x_hip = poses(idx(i), BodyParts.LeftHip, 1);
         y_hip = poses(idx(i), BodyParts.LeftHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), 200, 300);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), size(heatmaps, 1), size(heatmaps, 2));
         viol_hip = [viol_hip; new_x_hip, new_y_hip];
     end
     if ~isnan(poses(idx(i), BodyParts.RightHip, 1)) && ~isnan(poses(idx(i), BodyParts.RightHip, 2))
         x_hip = poses(idx(i), BodyParts.RightHip, 1);
         y_hip = poses(idx(i), BodyParts.RightHip, 2);
-        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), 200, 300);
+        [new_x_hip, new_y_hip] = convert_coords(x_hip, y_hip, size(I,1), size(I,2), size(heatmaps, 1), size(heatmaps, 2));
         viol_hip = [viol_hip; new_x_hip, new_y_hip];
     end
 end
@@ -252,7 +252,7 @@ function y_sensor_mm = y_pixelToMillimiters(y_pixel, sensorHeight, imageHeight)
     y_sensor_mm = (y_pixel * sensorHeight) / imageHeight;
 end
 
-% Converto un punto dalla dimensione 200x300 (poses) alla dimensione
+% Converto un punto dalla dimensione dell'immagine scalata (poses) alla dimensione
 % effettiva dell'immagine
 function [new_X,new_Y] = convert_coords(X,Y,outHeight,outWidth,inHeight,inWidth)
 Xratio = double(outHeight) / double(inHeight);
