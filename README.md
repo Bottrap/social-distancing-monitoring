@@ -46,7 +46,10 @@ Move the dataset folder in the project dir directly so that it appears as explai
 
 KORTE's dataset is composed of images from two scenarios.
 
+Scenario 1 example image
 ![scenario 1 image example](https://github.com/Bottrap/social-distancing-monitoring/blob/main/img_example/scenario_1_example.JPG)
+
+Scenario 2 example image
 ![scenario 2 image example](https://github.com/Bottrap/social-distancing-monitoring/blob/main/img_example/scenario_2_example.JPG)
 
 ## Run Social Distancing Monitoring using Camera Parameters
