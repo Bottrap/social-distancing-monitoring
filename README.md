@@ -44,6 +44,11 @@ Download the dataset folder from this link -> [download dataset]()
 
 Move the dataset folder in the project dir directly so that it appears as explained in the [project directory section](#project-directory).
 
+KORTE's dataset is composed of images from two scenarios.
+
+![scenario 1 image example]()
+![scenario 2 image example]()
+
 ## Run Social Distancing Monitoring using Camera Parameters
 
 In the case you are using our dataset, you don’t have to change anything, except the limit of frameNumber if you want to watch different video scene.
@@ -82,6 +87,7 @@ Before running the script, both for korte.m and for mall.m you can choose the de
 ```MATLAB
 yolo = false;
 ```
+In order to use this method with korte dataset (script korte.m) it is necessary to select an area of 4x4 floor tiles if using an image of the first scenario or an area of 4x2 floor tiles (since the short side of the tile is the half of the long side) if using an image of the second scenario, as shown in the project report.
 
 ## Run Social Distancing Monitoring using OpenPose method
 You can choose the image among those in the dataset but if you change the camera and use your own image, you have to change also the sensor height and the sensor width.
