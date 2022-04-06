@@ -94,7 +94,7 @@ figure, imshow(t)
 
 %%
 [x_world, y_world] = transformPointsForward(T, bottom_center(:,1), bottom_center(:, 2));
-T1 = insertMarker(IBird2, [x_world, y_world], "circle", "Size", 20, 'color', 'r');
+T1 = insertMarker(IBird, [x_world, y_world], "circle", "Size", 20, 'color', 'r');
 % imshow(T1)
 
 %%
