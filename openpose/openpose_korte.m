@@ -162,8 +162,8 @@ for i = 1:size(poses,1)
     bodySensorXmm = (x_neck_mm + x_hip_mm)/2;
     bodySensorYmm = (y_neck_mm + y_hip_mm)/2;
     
-    bodySensorXmm = -(bodySensorXmm - (sensor_width / 2));
-    bodySensorYmm = bodySensorYmm - (sensor_height / 2);
+    % bodySensorXmm = -(bodySensorXmm - (sensor_width / 2));
+    % bodySensorYmm = bodySensorYmm - (sensor_height / 2);
     
     camera_body_ZDistance = 0;
     if dim_torso ~= 0
