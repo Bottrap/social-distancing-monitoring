@@ -40,7 +40,7 @@ ${project_dir}/
 ```
 
 ### Download Dataset
-Download the dataset folder from this link -> [download dataset](https://www.mediafire.com/file/qxhyr40vgyjmz3f/dataset.rar/file)
+Download the dataset folder from this link -> [download dataset]
 
 Move the dataset folder in the project dir directly so that it appears as explained in the [project directory section](#project-directory).
 
