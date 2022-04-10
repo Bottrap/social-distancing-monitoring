@@ -42,16 +42,6 @@ ${project_dir}/
 ### Download Dataset
 The dataset that has been used is composed of two videos, and the KORTE Social Distance Estimation dataset (M. Seker, A. Mannisto , A. Iosifidis, J. Raitoharju: Automatic Social Distance Estimation From Images: Performance Evaluation, Test Benchmark, and Algorithm. arXiv:2103.06759, 2021.
 
-Move the dataset folder in the project dir directly so that it appears as explained in the [project directory section](#project-directory).
-
-KORTE's dataset is composed of images from two scenarios.
-
-**Scenario 1 example image**
-![scenario 1 image example](https://github.com/Bottrap/social-distancing-monitoring/blob/main/img_example/scenario_1_example.JPG)
-
-**Scenario 2 example image**
-![scenario 2 image example](https://github.com/Bottrap/social-distancing-monitoring/blob/main/img_example/scenario_2_example.JPG)
-
 ## Run Social Distancing Monitoring using Camera Parameters
 
 In the case you are using our dataset, you don’t have to change anything, except the limit of frameNumber if you want to watch different video scene.
