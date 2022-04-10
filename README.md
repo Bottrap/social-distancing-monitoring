@@ -40,7 +40,7 @@ ${project_dir}/
 ```
 
 ### Download Dataset
-Download the dataset folder from this link -> [download dataset]
+The dataset that has been used is composed of two videos, and the KORTE Social Distance Estimation dataset (M. Seker, A. Mannisto , A. Iosifidis, J. Raitoharju: Automatic Social Distance Estimation From Images: Performance Evaluation, Test Benchmark, and Algorithm. arXiv:2103.06759, 2021.
 
 Move the dataset folder in the project dir directly so that it appears as explained in the [project directory section](#project-directory).
 
