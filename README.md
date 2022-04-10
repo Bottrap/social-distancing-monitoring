@@ -100,4 +100,3 @@ sensor_height = 24; %mm
 sensor_width = 36; %mm
 ```
 Note that the OpenPose library represents the bottleneck of this system as it is not always very accurate in the detections.
-![bad OpenPose detection example](https://github.com/Bottrap/social-distancing-monitoring/blob/main/img_example/openpose_bad_detections.jpeg)
