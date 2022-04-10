@@ -82,7 +82,7 @@ yolo = false;
 ```
 In order to use this method with korte dataset (script korte.m) it is necessary to select an area of 4x4 floor tiles if using an image of the first scenario or an area of 4x2 floor tiles (since the short side of the tile is the half of the long side) if using an image of the second scenario, as shown in the project report.
 
-If you have any problem running the script with Yolov4 detector, you can download the neural net from this link [yolov4](https://www.mediafire.com/file/7ks61oj5kz2adfp/net.mat/file) and in order to use it you need to place it in the "meter_per_pixel" or "oxford_camera_params" folder.
+If you have any problem running the script with Yolov4 detector, you can download the neural net from this [link](https://www.mediafire.com/file/7ks61oj5kz2adfp/net.mat/file) and in order to use it you need to place it in the "meter_per_pixel" or "oxford_camera_params" folder.
 
 ## Run Social Distancing Monitoring using OpenPose method
 You can choose the image among those in the dataset but if you change the camera and use your own image, you have to change also the sensor height and the sensor width.
